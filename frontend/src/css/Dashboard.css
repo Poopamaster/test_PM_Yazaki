@@ -1,0 +1,216 @@
+/* =========================================
+   CSS สำหรับหน้า Dashboard
+========================================= */
+
+/* --- ตัวแปรสีหลัก (ถ้ายกไปใส่ :root ใน index.css แล้ว ข้ามส่วนนี้ได้) --- */
+:root {
+  --navy: #0B3D6B;
+  --navy-dark: #07294A;
+  --accent: #2D8CF0;
+  --accent-hover: #1A7AE0;
+  --red: #E53E3E;
+  --red-light: #FFF5F5;
+  --orange: #DD6B20;
+  --orange-light: #FFFAF0;
+  --green: #276749;
+  --green-light: #F0FFF4;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-800: #1F2937;
+}
+
+/* --- Animation (ตอนโหลดหน้าเว็บ) --- */
+.animate-in { animation: fadeIn 0.3s ease-out forwards; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Alert Banner (แบนเนอร์แจ้งเตือนสีแดงด้านบน) --- */
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.alert-banner.red {
+  background-color: var(--red-light);
+  border: 1px solid #FED7D7;
+}
+.alert-banner svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.alert-banner .msg {
+  flex: 1;
+  color: #C53030;
+  font-size: 13px;
+}
+
+/* --- Stat Cards (การ์ดสรุปตัวเลข 4 ช่อง) --- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.stat-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.stat-icon-wrap svg {
+  width: 24px;
+  height: 24px;
+}
+.stat-val {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--gray-800);
+}
+.stat-lbl {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 4px;
+}
+
+/* --- Layout แบ่ง 2 คอลัมน์สำหรับกราฟ --- */
+.row2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* --- Card ทั่วไป (กล่องขาวๆ) --- */
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--gray-200);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  padding: 20px;
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--navy-dark);
+}
+
+/* --- Table (ตารางอุปกรณ์) --- */
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--gray-50);
+  font-weight: 500;
+  color: var(--gray-500);
+  font-size: 12px;
+  border-bottom: 1px solid var(--gray-200);
+  white-space: nowrap;
+}
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 13px;
+  vertical-align: middle;
+  color: var(--gray-800);
+}
+tr:hover td {
+  background-color: var(--gray-50);
+}
+.mono {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  color: var(--navy-light);
+}
+
+/* --- Badges (ป้ายสถานะ) --- */
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  display: inline-block;
+  border: 1px solid transparent;
+}
+.badge-red {
+  background: var(--red-light);
+  color: var(--red);
+  border-color: #FEB2B2;
+}
+.badge-orange {
+  background: var(--orange-light);
+  color: var(--orange);
+  border-color: #FBD38D;
+}
+
+/* --- Buttons (ปุ่มต่างๆ) --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.btn-xs {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+.btn-outline {
+  background: white;
+  border-color: var(--gray-300);
+  color: var(--gray-800);
+}
+.btn-outline:hover {
+  background: var(--gray-50);
+  border-color: var(--gray-400);
+}
