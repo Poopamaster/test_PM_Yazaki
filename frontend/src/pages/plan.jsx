@@ -155,21 +155,21 @@ const Plan = () => {
         actualCost: updateFormData.actualCost,
         require: updateFormData.require
       };
-      
+
       // 1. บันทึก/อัปเดตข้อมูลรายการนี้ให้เสร็จก่อน
       await pmService.updateSchedule(updateFormData._id, payload);
 
       // 🚨 2. ตรรกะป้องกันการสร้างแผนซ้ำซ้อน (สำคัญมาก) 🚨
       // เช็คว่าอุปกรณ์เครื่องนี้ (equipmentSN) มีแผนที่ "กำลังรอทำ" (Pending/Overdue) อยู่ในระบบแล้วหรือยัง?
       // (โดยไม่นับรายการที่เรากำลังอัปเดตอยู่ ณ ตอนนี้)
-      const hasExistingPendingPlan = schedules.some(s => 
-         s.equipmentSN === updateFormData.equipmentSN && 
-         (s.status === 'Pending' || s.status === 'Overdue' || !s.status) &&
-         s._id !== updateFormData._id 
+      const hasExistingPendingPlan = schedules.some(s =>
+        s.equipmentSN === updateFormData.equipmentSN &&
+        (s.status === 'Pending' || s.status === 'Overdue' || !s.status) &&
+        s._id !== updateFormData._id
       );
 
       if (updateFormData.status === 'Completed' && updateFormData.intervalMonths > 0 && !hasExistingPendingPlan) {
-        
+
         const nextPlanDate = new Date(updateFormData.actualDate || new Date());
         nextPlanDate.setMonth(nextPlanDate.getMonth() + updateFormData.intervalMonths);
 
@@ -195,17 +195,44 @@ const Plan = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      const payload = {
+      // ส่งข้อมูลไปอัปเดตเฉพาะ planedDate และ require
+      await pmService.updateSchedule(editFormData._id, {
         planedDate: editFormData.planedDate,
         require: editFormData.require
-      };
-      await pmService.updateSchedule(editFormData._id, payload);
-      alert("แก้ไขแผน PM สำเร็จ!");
+      });
+      alert("เลื่อนแผน PM สำเร็จ!");
       setShowEditModal(false);
-      fetchData();
+      fetchData(); // โหลดข้อมูลใหม่
     } catch (error) {
       console.error(error);
-      alert("เกิดข้อผิดพลาดในการแก้ไขแผน");
+      alert("เกิดข้อผิดพลาดในการเลื่อนแผน");
+    }
+  };
+
+  const handleCancelClick = async (id) => {
+    if (window.confirm("ต้องการ 'ยกเลิก' แผน PM นี้ใช่หรือไม่? (สถานะจะเปลี่ยนเป็น Cancelled)")) {
+      try {
+        await pmService.updateSchedule(id, { status: 'Cancelled' });
+        alert("ยกเลิกแผนสำเร็จ!");
+        fetchData();
+      } catch (error) {
+        console.error(error);
+        alert("เกิดข้อผิดพลาดในการยกเลิกแผน");
+      }
+    }
+  };
+
+  const handleDeleteClick = async (id) => {
+    if (window.confirm("คุณแน่ใจหรือไม่ว่าต้องการ 'ลบ' รายการนี้? ข้อมูลจะหายไปถาวร!")) {
+      try {
+        // ต้องแน่ใจว่าใน pmService.js มีฟังก์ชัน deleteSchedule แล้ว
+        await pmService.deleteSchedule(id);
+        alert("ลบข้อมูลสำเร็จ!");
+        fetchData();
+      } catch (error) {
+        console.error(error);
+        alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+      }
     }
   };
 
@@ -435,52 +462,83 @@ const Plan = () => {
                         <td>{sch.zone}</td>
                         <td>{formatDate(sch.planedDate)}</td>
                         <td>{sch.actualDate ? formatDate(sch.actualDate) : '-'}</td>
+
+                        {/* 1. เพิ่ม Badge สถานะ ยกเลิก (Cancelled) */}
                         <td>
                           {sch.status === 'Completed' && <span className="badge badge-green">เสร็จแล้ว</span>}
                           {sch.status === 'Overdue' && <span className="badge badge-red">เลยกำหนด</span>}
                           {(sch.status === 'Pending' || !sch.status) && <span className="badge badge-orange">รอทำ</span>}
+                          {sch.status === 'Cancelled' && <span className="badge" style={{ backgroundColor: '#9ca3af', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>ยกเลิก</span>}
                         </td>
+
+                        {/* 2. ปรับปรุงกลุ่มปุ่มจัดการทั้งหมด */}
                         <td>
-                          {/* ปรับปรุงปุ่มจัดการ: ถ้าทำเสร็จแล้วให้โชว์แค่ปุ่มดูรายละเอียด */}
-                          {sch.status === 'Completed' ? (
-                            <button
-                              className="btn btn-sm btn-outline"
-                              onClick={() => {
-                                setUpdateFormData({ ...sch, actualDate: sch.actualDate ? sch.actualDate.split('T')[0] : '' });
-                                setShowUpdateModal(true);
-                              }}
-                            >
-                              รายละเอียด
-                            </button>
-                          ) : (
-                            <div style={{ display: 'flex', gap: '6px' }}>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+
+                            {/* ถ้าสถานะเป็น Completed หรือ Cancelled ให้แสดงแค่ปุ่มรายละเอียด */}
+                            {sch.status === 'Completed' || sch.status === 'Cancelled' ? (
                               <button
                                 className="btn btn-sm btn-outline"
                                 onClick={() => {
-                                  setEditFormData({ ...sch, planedDate: sch.planedDate ? sch.planedDate.split('T')[0] : '' });
-                                  setShowEditModal(true);
-                                }}
-                              >
-                                แก้ไขแผน
-                              </button>
-                              <button
-                                className="btn btn-sm btn-primary"
-                                onClick={() => {
-                                  // ดึง Default Cost มาใส่ให้
                                   setUpdateFormData({
                                     ...sch,
                                     actualDate: sch.actualDate ? sch.actualDate.split('T')[0] : '',
-                                    actualCost: sch.actualCost || sch.default_price || 0, // ควรดึง Default Cost มาเผื่อไว้ด้วย
-                                    isReadOnly: false // ✅ ปุ่มบันทึก PM ต้องเป็น false (หรือไม่ต้องใส่เลย) เพื่อให้ฟอร์มพิมพ์ได้
+                                    isReadOnly: true // ✅ บังคับให้เป็นโหมดดูรายละเอียดเท่านั้น
                                   });
                                   setShowUpdateModal(true);
                                 }}
                               >
-                                บันทึก PM
+                                รายละเอียด
                               </button>
+                            ) : (
+                              /* ถ้ายังไม่เสร็จ (Pending/Overdue) ให้แสดงปุ่ม บันทึก, เลื่อน, ยกเลิก */
+                              <>
+                                <button
+                                  className="btn btn-sm btn-primary"
+                                  onClick={() => {
+                                    setUpdateFormData({
+                                      ...sch,
+                                      actualDate: sch.actualDate ? sch.actualDate.split('T')[0] : '',
+                                      actualCost: sch.actualCost || sch.default_price || 0,
+                                      isReadOnly: false // ✅ ให้พิมพ์ฟอร์มได้
+                                    });
+                                    setShowUpdateModal(true);
+                                  }}
+                                >
+                                  บันทึก PM
+                                </button>
 
-                            </div>
-                          )}
+                                <button
+                                  className="btn btn-sm"
+                                  style={{ backgroundColor: '#f59e0b', color: '#fff', border: 'none' }}
+                                  onClick={() => {
+                                    setEditFormData({ ...sch, planedDate: sch.planedDate ? sch.planedDate.split('T')[0] : '' });
+                                    setShowEditModal(true);
+                                  }}
+                                >
+                                  เลื่อนแผน
+                                </button>
+
+                                <button
+                                  className="btn btn-sm"
+                                  style={{ backgroundColor: '#6b7280', color: '#fff', border: 'none' }}
+                                  onClick={() => handleCancelClick(sch._id)}
+                                >
+                                  ยกเลิก
+                                </button>
+                              </>
+                            )}
+
+                            {/* ปุ่มลบ แสดงเสมอในทุกสถานะ */}
+                            <button
+                              className="btn btn-sm"
+                              style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none' }}
+                              onClick={() => handleDeleteClick(sch._id)}
+                            >
+                              ลบ
+                            </button>
+
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -505,12 +563,25 @@ const Plan = () => {
       )}
 
       {/* Modals */}
-      <AddPlanModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} onSave={handleAddSubmit} addFormData={addFormData} setAddFormData={setAddFormData} equipmentList={equipmentList} />
+      <AddPlanModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} 
+      onSave={handleAddSubmit} 
+      addFormData={addFormData} 
+      setAddFormData={setAddFormData} 
+      equipmentList={equipmentList} 
+      formatDate={formatDate}/>
 
-      <UpdatePlanModal isOpen={showUpdateModal} onClose={() => setShowUpdateModal(false)} onSave={handleUpdateSubmit} updateFormData={updateFormData} setUpdateFormData={setUpdateFormData} />
+      <UpdatePlanModal isOpen={showUpdateModal} onClose={() => setShowUpdateModal(false)} 
+      onSave={handleUpdateSubmit} 
+      updateFormData={updateFormData} 
+      setUpdateFormData={setUpdateFormData} 
+      formatDate={formatDate}/>
 
       {/* Modal ใหม่สำหรับแก้ไขแผน */}
-      <EditPlanModal isOpen={showEditModal} onClose={() => setShowEditModal(false)} onSave={handleEditSubmit} editFormData={editFormData} setEditFormData={setEditFormData} />
+      <EditPlanModal isOpen={showEditModal} onClose={() => setShowEditModal(false)} 
+      onSave={handleEditSubmit} 
+      editFormData={editFormData} 
+      setEditFormData={setEditFormData} 
+      formatDate={formatDate}/>
 
     </div>
   );

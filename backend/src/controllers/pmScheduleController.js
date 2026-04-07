@@ -54,3 +54,19 @@ exports.deleteSchedule = async (req, res) => {
         res.status(400).json({ success: false, message: error.message });
     }
 };
+
+
+exports.bulkUpdate = async (req, res) => {
+    try {
+        const { ids, updateData } = req.body;
+        
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ success: false, message: 'กรุณาส่ง IDs ของรายการที่ต้องการอัปเดต' });
+        }
+
+        const result = await pmScheduleService.bulkUpdateSchedules(ids, updateData);
+        res.status(200).json({ success: true, message: `อัปเดตสำเร็จ ${result.modifiedCount} รายการ`, data: result });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

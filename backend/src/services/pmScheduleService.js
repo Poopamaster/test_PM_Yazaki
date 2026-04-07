@@ -1,4 +1,4 @@
-const PmSchedule = require('../models/PMSchedulemodel');
+const PmSchedule = require('../models/PMScheduleModel');
 
 // ดึงข้อมูลแผน PM ทั้งหมด
 exports.getAllSchedules = async () => {
@@ -37,4 +37,15 @@ exports.deleteSchedule = async (id) => {
     const schedule = await PmSchedule.findByIdAndDelete(id);
     if (!schedule) throw new Error('ไม่พบข้อมูลที่ต้องการลบ');
     return schedule;
+};
+
+// pmScheduleService.js (เพิ่มต่อท้าย)
+
+exports.bulkUpdateSchedules = async (ids, data) => {
+    // ใช้ updateMany เพื่อหา _id ที่อยู่ใน array ids แล้วทำการ set ค่าใหม่
+    const result = await PmSchedule.updateMany(
+        { _id: { $in: ids } }, 
+        { $set: data }
+    );
+    return result;
 };

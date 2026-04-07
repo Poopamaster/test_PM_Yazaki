@@ -15,5 +15,6 @@ export const pmService = {
     getAllSchedules: () => axiosClient.get('/pm-schedule'),
     getSchedulesBySn: (sn) => axiosClient.get(`/pm-schedule/equipment/${sn}`),
     createSchedule: (data) => axiosClient.post('/pm-schedule', data),
-    updateSchedule: (id, data) => axiosClient.put(`/pm-schedule/${id}`, data)
+    updateSchedule: (id, data) => axiosClient.put(`/pm-schedule/${id}`, data),
+    deleteSchedule: (id) => axiosClient.delete(`/pm-schedule/${id}`),
 };

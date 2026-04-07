@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const UpdatePlanModal = ({ isOpen, onClose, onSave, updateFormData, setUpdateFormData }) => {
+const UpdatePlanModal = ({ isOpen, onClose, onSave, updateFormData, setUpdateFormData, formatDate }) => {
   const [tasks, setTasks] = useState({
     task1: false, task2: false, task3: false, task4: false
   });

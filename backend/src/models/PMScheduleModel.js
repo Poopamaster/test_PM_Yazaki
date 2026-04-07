@@ -24,7 +24,7 @@ const PMscheduleSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Completed', 'Overdue'],
+        enum: ['Pending', 'Completed', 'Overdue', 'Cancelled', 'Skipped'],
         default: 'Pending'
     },
     require: {

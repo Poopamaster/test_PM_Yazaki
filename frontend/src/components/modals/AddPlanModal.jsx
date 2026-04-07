@@ -1,6 +1,6 @@
 import React from 'react';
 
-const AddPlanModal = ({ isOpen, onClose, onSave, addFormData, setAddFormData, equipmentList }) => {
+const AddPlanModal = ({ isOpen, onClose, onSave, addFormData, setAddFormData, equipmentList, formatDate }) => {
   if (!isOpen) return null;
 
   return (
@@ -13,14 +13,24 @@ const AddPlanModal = ({ isOpen, onClose, onSave, addFormData, setAddFormData, eq
           <div className="modal-body">
             <div className="form-group">
               <label>เลือกอุปกรณ์ (SN)</label>
-              <select required className="form-control" value={addFormData.equipmentSN} onChange={(e) => setAddFormData({...addFormData, equipmentSN: e.target.value})}>
+              <select required className="form-control" value={addFormData.equipmentSN} onChange={(e) => setAddFormData({ ...addFormData, equipmentSN: e.target.value })}>
                 <option value="">-- เลือกอุปกรณ์ --</option>
                 {equipmentList.map(eq => <option key={eq.sn} value={eq.sn}>{eq.sn} - {eq.name}</option>)}
               </select>
             </div>
             <div className="form-group">
               <label>วันที่วางแผน (Planed Date)</label>
-              <input required type="date" className="form-control" value={addFormData.planedDate} onChange={(e) => setAddFormData({...addFormData, planedDate: e.target.value})} />
+              <input
+                required
+                type="date"
+                className="form-control custom-date-input"
+                data-date={formatDate(addFormData.planedDate)}
+
+                value={addFormData.planedDate ? addFormData.planedDate.substring(0, 10) : ''}
+
+                onChange={(e) => setAddFormData({ ...addFormData, planedDate: e.target.value })}
+                style={{ position: 'relative' }}
+              />
             </div>
           </div>
           <div className="modal-footer">
