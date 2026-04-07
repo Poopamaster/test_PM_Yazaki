@@ -4,19 +4,23 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; /* จัดให้อยู่กลางจอเสมอ */
   z-index: 1000;
-  animation: fadeIn 0.2s ease-in-out;
 }
 
 .modal-content {
   background-color: white;
   width: 100%;
   max-width: 500px;
+  /* --- ส่วนที่แก้เพื่อกันทะลุจอ --- */
+  max-height: 90vh; /* บังคับสูงไม่เกิน 90% ของความสูงหน้าจอ */
+  display: flex;
+  flex-direction: column; /* จัด Header, Body, Footer เป็นแนวตั้ง */
+  /* ---------------------------- */
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -29,6 +33,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0; /* ป้องกัน Header ยุบตัว */
 }
 
 .modal-header h3 {
@@ -52,6 +57,9 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  /* --- ส่วนที่แก้เพื่อให้ Scroll ได้แค่ใน Body --- */
+  overflow-y: auto; /* ถ้าเนื้อหายาว ให้เกิด Scrollbar แค่ตรงนี้ */
+  flex: 1; /* กินพื้นที่ที่เหลือระหว่าง Header และ Footer */
 }
 
 .form-group {
@@ -78,4 +86,5 @@
   justify-content: flex-end;
   gap: 12px;
   background-color: var(--gray-50);
+  flex-shrink: 0; /* ป้องกัน Footer ยุบตัว */
 }

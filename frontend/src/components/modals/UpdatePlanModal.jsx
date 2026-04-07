@@ -5,8 +5,33 @@ const UpdatePlanModal = ({ isOpen, onClose, onSave, updateFormData, setUpdateFor
     task1: false, task2: false, task3: false, task4: false
   });
 
+  const taskLabels = {
+    task1: "ทำความสะอาดภายใน",
+    task2: "ตรวจสอบ / เปลี่ยนอุปกรณ์สิ้นเปลือง",
+    task3: "ตรวจสอบการทำงานระบบไฟฟ้า", // เผื่อมีเพิ่ม
+    task4: "ทดสอบการทำงานปกติ"
+  };
+
   // เช็คว่าเป็นโหมด "ดูรายละเอียด" (Read Only) หรือไม่?
   const isReadOnly = updateFormData?.isReadOnly || false;
+
+  // เมื่อ tasks เปลี่ยนแปลง ให้สร้าง description อัตโนมัติ
+  useEffect(() => {
+    if (isReadOnly) return; // ถ้าโหมดดูอย่างเดียว ไม่ต้องแก้อะไร
+
+    // กรองเอาเฉพาะ task ที่ถูกติ๊ก (true) แล้วเอา label มาใส่ใน Array
+    const selectedTasks = Object.keys(tasks)
+      .filter(key => tasks[key])
+      .map(key => taskLabels[key]);
+
+    // นำข้อความมาต่อกันด้วย ", " หรือ ขึ้นบรรทัดใหม่
+    const autoNote = selectedTasks.join(", ");
+
+    setUpdateFormData(prev => ({
+      ...prev,
+      require: autoNote
+    }));
+  }, [tasks]); // ทำงานทุกครั้งที่ติ๊กหรือติ๊กออก
 
   useEffect(() => {
     if (isOpen && updateFormData && !isReadOnly) {
@@ -14,11 +39,11 @@ const UpdatePlanModal = ({ isOpen, onClose, onSave, updateFormData, setUpdateFor
       const todayObj = new Date();
       const offset = todayObj.getTimezoneOffset() * 60000;
       const localToday = new Date(todayObj.getTime() - offset).toISOString().split('T')[0];
-      
+
       setUpdateFormData(prev => ({
         ...prev,
         actualDate: prev.actualDate || localToday,
-        status: 'Completed' 
+        status: 'Completed'
       }));
     }
   }, [isOpen]);
@@ -31,7 +56,7 @@ const UpdatePlanModal = ({ isOpen, onClose, onSave, updateFormData, setUpdateFor
   return (
     <div className="modal-overlay" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}>
       <div className="modal-content" style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '500px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
-        
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
           <div>
             <h3 style={{ margin: '0 0 4px 0', fontSize: '20px', color: '#1f2937' }}>
@@ -46,23 +71,23 @@ const UpdatePlanModal = ({ isOpen, onClose, onSave, updateFormData, setUpdateFor
 
         <form onSubmit={onSave}>
           <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px' }}>วันที่ PM จริง</label>
-                <input 
+                <input
                   type="date" className="form-control" required={!isReadOnly} disabled={isReadOnly}
-                  value={updateFormData.actualDate ? updateFormData.actualDate.split('T')[0] : ''} 
-                  onChange={(e) => setUpdateFormData({...updateFormData, actualDate: e.target.value})}
+                  value={updateFormData.actualDate ? updateFormData.actualDate.split('T')[0] : ''}
+                  onChange={(e) => setUpdateFormData({ ...updateFormData, actualDate: e.target.value })}
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: isReadOnly ? '#f3f4f6' : '#fff', color: isReadOnly ? '#6b7280' : '#000' }}
                 />
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px' }}>ช่างเทคนิค</label>
-                <input 
+                <input
                   type="text" className="form-control" required={!isReadOnly} disabled={isReadOnly}
-                  placeholder="ชื่อผู้ดำเนินการ" value={updateFormData.operator || ''} 
-                  onChange={(e) => setUpdateFormData({...updateFormData, operator: e.target.value})} 
+                  placeholder="ชื่อผู้ดำเนินการ" value={updateFormData.operator || ''}
+                  onChange={(e) => setUpdateFormData({ ...updateFormData, operator: e.target.value })}
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: isReadOnly ? '#f3f4f6' : '#fff', color: isReadOnly ? '#6b7280' : '#000' }}
                 />
               </div>
@@ -70,10 +95,10 @@ const UpdatePlanModal = ({ isOpen, onClose, onSave, updateFormData, setUpdateFor
 
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px' }}>ค่าใช้จ่ายจริง (บาท)</label>
-              <input 
+              <input
                 type="number" className="form-control" required={!isReadOnly} disabled={isReadOnly}
-                value={updateFormData.actualCost || 0} 
-                onChange={(e) => setUpdateFormData({...updateFormData, actualCost: e.target.value})} 
+                value={updateFormData.actualCost || 0}
+                onChange={(e) => setUpdateFormData({ ...updateFormData, actualCost: e.target.value })}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: isReadOnly ? '#f3f4f6' : '#fff', color: isReadOnly ? '#6b7280' : '#000' }}
               />
             </div>
@@ -93,10 +118,10 @@ const UpdatePlanModal = ({ isOpen, onClose, onSave, updateFormData, setUpdateFor
 
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px' }}>หมายเหตุ / รายละเอียด</label>
-              <textarea 
+              <textarea
                 className="form-control" rows="2" disabled={isReadOnly}
-                placeholder={isReadOnly ? "-" : "รายละเอียดงานที่ทำ..."} value={updateFormData.require || ''} 
-                onChange={handleNoteChange} 
+                placeholder={isReadOnly ? "-" : "รายละเอียดงานที่ทำ..."} value={updateFormData.require || ''}
+                onChange={handleNoteChange}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', resize: 'vertical', backgroundColor: isReadOnly ? '#f3f4f6' : '#fff', color: isReadOnly ? '#6b7280' : '#000' }}
               />
             </div>

@@ -135,6 +135,11 @@ const Plan = () => {
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     try {
+      const duplicate = schedules.some(s => s.equipmentSN === addFormData.equipmentSN && (s.status !== 'Completed'));
+      if (duplicate) {
+        alert("อุปกรณ์นี้มีแผน PM อยู่แล้ว");
+        return;
+      }
       await pmService.createSchedule(addFormData);
       alert("เพิ่มแผน PM สำเร็จ!");
       setShowAddModal(false);
@@ -444,7 +449,9 @@ const Plan = () => {
                     <th>Zone</th>
                     <th>วันที่นัดหมาย</th>
                     <th>วันที่ทำจริง</th>
+                    <th>ผู้ดำเนินการ</th>
                     <th>สถานะ</th>
+                    <th>หมายเหตุ</th>
                     <th>จัดการ</th>
                   </tr>
                 </thead>
@@ -462,6 +469,7 @@ const Plan = () => {
                         <td>{sch.zone}</td>
                         <td>{formatDate(sch.planedDate)}</td>
                         <td>{sch.actualDate ? formatDate(sch.actualDate) : '-'}</td>
+                        <td>{sch.operator || '-'}</td>
 
                         {/* 1. เพิ่ม Badge สถานะ ยกเลิก (Cancelled) */}
                         <td>
@@ -470,6 +478,7 @@ const Plan = () => {
                           {(sch.status === 'Pending' || !sch.status) && <span className="badge badge-orange">รอทำ</span>}
                           {sch.status === 'Cancelled' && <span className="badge" style={{ backgroundColor: '#9ca3af', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>ยกเลิก</span>}
                         </td>
+                        <td>{sch.require || '-'}</td>
 
                         {/* 2. ปรับปรุงกลุ่มปุ่มจัดการทั้งหมด */}
                         <td>
