@@ -1,5 +1,6 @@
 // src/pages/Plan.jsx
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom'; // เพิ่ม import
 import { pmService } from '../api/pmService';
 import AddPlanModal from '../components/modals/AddPlanModal';
 import UpdatePlanModal from '../components/modals/UpdatePlanModal';
@@ -44,6 +45,41 @@ const Plan = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [filterCategory, filterZone, filterYear, filterMonth, filterStatus]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const targetId = params.get('id');
+    const action = params.get('action');
+
+    if (targetId && schedules.length > 0) {
+      // หาข้อมูลของ task นั้นจากลิสต์ที่มีอยู่
+      const task = schedules.find(s => s._id === targetId);
+
+      if (task) {
+        if (action === 'update') {
+          // เซ็ตข้อมูลและเปิด Modal บันทึกผล PM
+          setUpdateFormData({
+            id: task._id,
+            equipmentSN: task.equipmentSN,
+            planedDate: task.planedDate,
+            actualDate: new Date().toISOString().split('T')[0], // วันที่ปัจจุบัน
+            operator: '',
+            actualCost: 0,
+            require: task.require || ''
+          });
+          setShowUpdateModal(true);
+        } else if (action === 'edit') {
+          // เซ็ตข้อมูลและเปิด Modal แก้ไขแผน
+          setEditFormData({
+            id: task._id,
+            equipmentSN: task.equipmentSN,
+            planedDate: task.planedDate.split('T')[0]
+          });
+          setShowEditModal(true);
+        }
+      }
+    }
+  }, [location.search, schedules]);
 
   const fetchData = async () => {
     try {
@@ -139,12 +175,13 @@ const Plan = () => {
       if (duplicate) {
         alert("อุปกรณ์นี้มีแผน PM อยู่แล้ว");
         return;
+      } else {
+        await pmService.createSchedule(addFormData);
+        alert("เพิ่มแผน PM สำเร็จ!");
+        setShowAddModal(false);
+        setAddFormData({ equipmentSN: '', planedDate: '' });
+        fetchData();
       }
-      await pmService.createSchedule(addFormData);
-      alert("เพิ่มแผน PM สำเร็จ!");
-      setShowAddModal(false);
-      setAddFormData({ equipmentSN: '', planedDate: '' });
-      fetchData();
     } catch (error) {
       alert("เกิดข้อผิดพลาดในการเพิ่มแผน");
     }
@@ -572,25 +609,25 @@ const Plan = () => {
       )}
 
       {/* Modals */}
-      <AddPlanModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} 
-      onSave={handleAddSubmit} 
-      addFormData={addFormData} 
-      setAddFormData={setAddFormData} 
-      equipmentList={equipmentList} 
-      formatDate={formatDate}/>
+      <AddPlanModal isOpen={showAddModal} onClose={() => setShowAddModal(false)}
+        onSave={handleAddSubmit}
+        addFormData={addFormData}
+        setAddFormData={setAddFormData}
+        equipmentList={equipmentList}
+        formatDate={formatDate} />
 
-      <UpdatePlanModal isOpen={showUpdateModal} onClose={() => setShowUpdateModal(false)} 
-      onSave={handleUpdateSubmit} 
-      updateFormData={updateFormData} 
-      setUpdateFormData={setUpdateFormData} 
-      formatDate={formatDate}/>
+      <UpdatePlanModal isOpen={showUpdateModal} onClose={() => setShowUpdateModal(false)}
+        onSave={handleUpdateSubmit}
+        updateFormData={updateFormData}
+        setUpdateFormData={setUpdateFormData}
+        formatDate={formatDate} />
 
       {/* Modal ใหม่สำหรับแก้ไขแผน */}
-      <EditPlanModal isOpen={showEditModal} onClose={() => setShowEditModal(false)} 
-      onSave={handleEditSubmit} 
-      editFormData={editFormData} 
-      setEditFormData={setEditFormData} 
-      formatDate={formatDate}/>
+      <EditPlanModal isOpen={showEditModal} onClose={() => setShowEditModal(false)}
+        onSave={handleEditSubmit}
+        editFormData={editFormData}
+        setEditFormData={setEditFormData}
+        formatDate={formatDate} />
 
     </div>
   );

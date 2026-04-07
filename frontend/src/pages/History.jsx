@@ -30,7 +30,7 @@ const History = () => {
         <div className="flex justify-between items-center" style={{paddingTop:'10px',marginTop:'8px',borderTop:'1px solid var(--gray-100)'}}>
           <span className="text-sm text-gray">รวม 14 รายการ</span>
           <span className="text-sm" style={{fontWeight:600, color:'var(--gray-800)'}}>
-            รวมค่าใช้จ่าย: <span style={{color:'var(--green)',fontFamily:'IBM Plex Mono',monospace}}>฿5,400</span>
+            รวมค่าใช้จ่าย: 
           </span>
         </div>
       </div>

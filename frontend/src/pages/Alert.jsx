@@ -1,53 +1,162 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { pmService } from '../api/pmService';
+import '../css/Alert.css';
 
-const Alert = () => {
+const AlertPage = () => {
   const [activeTab, setActiveTab] = useState('all');
+  const [schedules, setSchedules] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [resSchedules, resEquipments] = await Promise.all([
+        pmService.getAllSchedules(),
+        pmService.getAllEquipments()
+      ]);
+
+      const rawSchedules = resSchedules.data?.data || resSchedules.data || [];
+      const rawEquipments = resEquipments.data?.data || resEquipments.data || [];
+
+      const combinedData = rawSchedules.map(schedule => {
+        // เชื่อมด้วย equipmentSN (จากตารางแผน) ให้ตรงกับ sn (จากตารางอุปกรณ์)
+        const masterInfo = rawEquipments.find(eq => eq.sn === schedule.equipmentSN);
+
+        return {
+          ...schedule,
+          // ดึงชื่อจาก Database (อ้างอิงตาม EquipmentModel.js)
+          category: masterInfo?.category?.name || masterInfo?.category || "Device",
+          model: masterInfo?.model || "-",
+          zone: masterInfo?.zone || "N/A",
+          equipmentName: masterInfo?.name || "",
+          sn: schedule.equipmentSN
+        };
+      });
+
+      setSchedules(combinedData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNavigateToTask = (alert) => {
+    const action = alert.type === 'overdue' ? 'update' : 'edit';
+    navigate(`/plan?id=${alert.id}&sn=${alert.sn}&action=${action}`);
+  };
+
+  const getDaysDiff = (targetDate) => {
+    if (!targetDate) return 999;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(targetDate);
+    if (isNaN(target.getTime())) return 999;
+    const diffTime = target - today;
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const processedAlerts = (Array.isArray(schedules) ? schedules : []).map(item => {
+    const daysDiff = getDaysDiff(item.planedDate);
+    let type = 'normal';
+
+    if (daysDiff < 0) {
+      type = 'overdue';
+    } else if (daysDiff <= 500) {
+      type = 'soon';
+    }
+
+    return {
+      ...item,
+      id: item._id,
+      sn: item.equipmentSN,
+      type,
+      daysDiff: Math.abs(daysDiff),
+      planned_date: item.planedDate
+    };
+  })
+    .filter(item => item.type !== 'normal')
+    .sort((a, b) => {
+      // 1. เรียงตามประเภท: ให้ 'overdue' ขึ้นก่อน 'soon'
+      if (a.type === 'overdue' && b.type !== 'overdue') return -1;
+      if (a.type !== 'overdue' && b.type === 'overdue') return 1;
+
+      // 2. ถ้าประเภทเดียวกัน ให้เรียงตามวันที่ (เก่าที่สุดขึ้นก่อน)
+      return new Date(a.planedDate) - new Date(b.planedDate);
+    });
+
+  const filteredAlerts = processedAlerts.filter(item => {
+    if (activeTab === 'all') return true;
+    return item.type === activeTab;
+  });
+
+  if (loading) return <div className="p-4">กำลังโหลดข้อมูลการแจ้งเตือน...</div>;
 
   return (
     <div className="page active animate-in fade-in">
-      <div className="tabs">
-        <div className={`tab ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>ทั้งหมด (17)</div>
-        <div className={`tab ${activeTab === 'overdue' ? 'active' : ''}`} onClick={() => setActiveTab('overdue')}>เลยกำหนด (3)</div>
-        <div className={`tab ${activeTab === 'soon' ? 'active' : ''}`} onClick={() => setActiveTab('soon')}>ครบกำหนดใน 30 วัน (14)</div>
+      <div className="alert-header">
+        <div>
+          <h2>การแจ้งเตือน (Alert) <span className="sub-title">— ระบบบำรุงรักษาเชิงป้องกัน</span></h2>
+        </div>
       </div>
-      
-      <div id="alert-list">
-        {/* ตัวอย่าง Alert สีแดง */}
-        {(activeTab === 'all' || activeTab === 'overdue') && (
-          <div className="alert-card overdue">
-            <div className="alert-card-icon" style={{background:'var(--red-light)', color:'var(--red)'}}>
-              <svg fill="none" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="1.5"><path d="M10 2L2 16h16L10 2z"/><path d="M10 7v4M10 13v.5" strokeLinecap="round"/></svg>
-            </div>
-            <div className="alert-card-body">
-              <div className="alert-card-title">PT.MTS004069 — เลยกำหนด PM</div>
-              <div className="alert-card-detail">PRINTER | LASER | HP M706N | Zone B1 <span style={{margin:'0 6px'}}>•</span> กำหนด: 03/05/68</div>
-            </div>
-            <div className="alert-card-actions">
-              <span className="badge badge-red">เลยกำหนด 14 วัน</span>
-              <button className="btn btn-primary btn-sm">บันทึก PM ทันที</button>
-            </div>
-          </div>
-        )}
 
-        {/* ตัวอย่าง Alert สีส้ม */}
-        {(activeTab === 'all' || activeTab === 'soon') && (
-          <div className="alert-card pending">
-            <div className="alert-card-icon" style={{background:'var(--orange-light)', color:'var(--orange)'}}>
-              <svg fill="none" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="8"/><path d="M10 6v4.5l2.5 1.5"/></svg>
+      {/* แก้ไขส่วน Tabs ให้ใช้คลาสจาก CSS ใหม่ */}
+      <div className="tabs-container">
+        <div className={`tab-item ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>
+          ทั้งหมด ({processedAlerts.length})
+        </div>
+        <div className={`tab-item ${activeTab === 'overdue' ? 'active' : ''}`} onClick={() => setActiveTab('overdue')}>
+          เลยกำหนด ({processedAlerts.filter(a => a.type === 'overdue').length})
+        </div>
+        <div className={`tab-item ${activeTab === 'soon' ? 'active' : ''}`} onClick={() => setActiveTab('soon')}>
+          ครบกำหนดใน 30 วัน ({processedAlerts.filter(a => a.type === 'soon').length})
+        </div>
+      </div>
+
+      <div id="alert-list">
+        {filteredAlerts.map((alert) => (
+          <div key={alert.id} className={`alert-card-new ${alert.type}`}>
+            <div className="alert-side-border"></div>
+
+            <div className="alert-content">
+              <div className="alert-title-row">
+                {/* แสดงชื่ออุปกรณ์คู่กับ SN เพื่อความชัดเจน */}
+                <span className="alert-sn">{alert.equipmentName || alert.sn}</span>
+                <span className="alert-sep">—</span>
+                <span className="alert-status-text">
+                  {alert.type === 'overdue' ? `เลยกำหนด PM ${alert.daysDiff} วัน` : `ครบกำหนดใน ${alert.daysDiff} วัน`}
+                </span>
+              </div>
+              <div className="alert-sub-detail">
+                {alert.category} | {alert.model} | Zone {alert.zone}
+                <span className="dot">•</span> กำหนด: {new Date(alert.planedDate).toLocaleDateString('th-TH')}
+              </div>
             </div>
-            <div className="alert-card-body">
-              <div className="alert-card-title">OKI 395_PE1 — ใกล้ถึงกำหนด PM</div>
-              <div className="alert-card-detail">PRINTER | DOTMATRIX | OKI 395 | Zone B1 <span style={{margin:'0 6px'}}>•</span> กำหนด: 06/05/68</div>
-            </div>
-            <div className="alert-card-actions">
-              <span className="badge badge-orange">รอทำ</span>
-              <button className="btn btn-outline btn-sm">บันทึก PM</button>
+
+            <div className="alert-actions-new">
+              <span className={`status-badge-outline ${alert.type}`}>
+                {alert.type === 'overdue' ? `เลยกำหนด ${alert.daysDiff} วัน` : `รอทำ ${alert.daysDiff} วัน`}
+              </span>
+
+              {/* 4. ใส่ onClick ให้กับปุ่ม */}
+              <button
+                className={`btn-sm ${alert.type === 'overdue' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => handleNavigateToTask(alert)}
+              >
+                {alert.type === 'overdue' ? 'บันทึก PM ทันที' : 'วางแผน PM'}
+              </button>
             </div>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
 };
 
-export default Alert;
+export default AlertPage;
