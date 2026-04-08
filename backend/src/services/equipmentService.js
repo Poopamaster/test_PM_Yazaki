@@ -24,7 +24,7 @@ exports.createEquipment = async (data) => {
 // อัปเดตข้อมูลอุปกรณ์ด้วย SN
 exports.updateEquipment = async (sn, data) => {
     const equipment = await Equipment.findOneAndUpdate({ sn }, data, { 
-        new: true, // ให้คืนค่า document ตัวที่อัปเดตแล้วกลับมา
+        returnDocument: 'after',
         runValidators: true 
     });
     if (!equipment) throw new Error('ไม่พบอุปกรณ์ที่ต้องการอัปเดต');

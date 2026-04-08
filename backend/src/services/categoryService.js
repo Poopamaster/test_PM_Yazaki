@@ -25,7 +25,7 @@ exports.createCategory = async (data) => {
 // อัปเดตข้อมูลกลุ่มอุปกรณ์
 exports.updateCategory = async (id, data) => {
     const category = await Category.findByIdAndUpdate(id, data, {
-        new: true, // คืนค่า document ที่อัปเดตแล้ว
+        returnDocument: 'after',
         runValidators: true
     });
     if (!category) throw new Error('ไม่พบข้อมูลที่ต้องการอัปเดต');
@@ -34,7 +34,11 @@ exports.updateCategory = async (id, data) => {
 
 // ลบกลุ่มอุปกรณ์
 exports.deleteCategory = async (id) => {
-    const category = await Category.findByIdAndDelete(id);
-    if (!category) throw new Error('ไม่พบข้อมูลที่ต้องการลบ');
+    const category = await Category.findByIdAndUpdate(
+        id, 
+        { isActive: false }, // เปลี่ยนสถานะเป็น false แทนการลบ
+        { returnDocument: 'after' }
+    );
+    if (!category) throw new Error('ไม่พบข้อมูลที่ต้องการปิดใช้งาน');
     return category;
 };

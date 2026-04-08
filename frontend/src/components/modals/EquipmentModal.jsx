@@ -6,11 +6,11 @@ const EquipmentModal = ({ isOpen, onClose, onSave, initialData, categories }) =>
   const [formData, setFormData] = useState({
     sn: '',
     name: '',
-    category: '', 
-    type: '',     
-    brand: '',    
-    model: '',    
-    zone: '',     
+    category: '',
+    type: '',
+    brand: '',
+    model: '',
+    zone: '',
     status: 'Active'
   });
 
@@ -18,8 +18,8 @@ const EquipmentModal = ({ isOpen, onClose, onSave, initialData, categories }) =>
     if (initialData) {
       setFormData(initialData);
     } else {
-      setFormData({ 
-        sn: '', name: '', category: '', type: '', brand: '', model: '', zone: '', status: 'Active' 
+      setFormData({
+        sn: '', name: '', category: '', type: '', brand: '', model: '', zone: '', status: 'Active'
       });
     }
   }, [initialData, isOpen]);
@@ -36,24 +36,24 @@ const EquipmentModal = ({ isOpen, onClose, onSave, initialData, categories }) =>
 
   if (!isOpen) return null;
 
- return (
+  return (
     <div className="modal-overlay">
-      
+
       {/* 1. เปลี่ยนจาก <div> เป็น <form> และเอา onSubmit มาไว้ตรงนี้ */}
       <form className="modal-content" onSubmit={handleSubmit}>
-        
+
         <div className="modal-header">
           <h3>{initialData ? 'แก้ไขอุปกรณ์' : 'เพิ่มอุปกรณ์ใหม่'}</h3>
           <button type="button" className="btn-close" onClick={onClose}>&times;</button>
         </div>
-        
+
         {/* 2. เอา <form> ที่เคยครอบตรงนี้ออกไปเลย */}
         <div className="modal-body">
           <div className="form-group">
             <label>SN อุปกรณ์ *</label>
             <input type="text" name="sn" className="form-control" value={formData.sn} onChange={handleChange} readOnly={!!initialData} required />
           </div>
-          
+
           <div className="form-group">
             <label>ชื่ออุปกรณ์ *</label>
             <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} required />
@@ -61,11 +61,21 @@ const EquipmentModal = ({ isOpen, onClose, onSave, initialData, categories }) =>
 
           <div className="form-group">
             <label>หมวดหมู่ *</label>
-            <select name="category" className="form-control" value={formData.category} onChange={handleChange} required>
-              <option value="">-- เลือกหมวดหมู่ --</option>
-              {categories.map(cat => (
-                <option key={cat._id} value={cat._id}>{cat.name}</option>
-              ))}
+            <select
+              name="category"
+              className="form-control"
+              value={formData.category}
+              onChange={handleChange}
+              required
+            >
+              <option value="">-- เลือกกลุ่มอุปกรณ์ --</option>
+              {categories
+                .filter(cat => cat.isActive !== false || cat._id === initialData?.category)
+                .map(cat => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name} {cat.isActive === false ? '(ปิดใช้งาน)' : ''}
+                  </option>
+                ))}
             </select>
           </div>
 
@@ -102,9 +112,9 @@ const EquipmentModal = ({ isOpen, onClose, onSave, initialData, categories }) =>
           <button type="button" className="btn btn-outline" onClick={onClose}>ยกเลิก</button>
           <button type="submit" className="btn btn-primary">บันทึกข้อมูล</button>
         </div>
-        
+
       </form>
-      
+
     </div>
   );
 };

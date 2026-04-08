@@ -3,6 +3,10 @@ import axiosClient from './axiosclient';
 export const pmService = {
     // --- Category API ---
     getAllCategories: () => axiosClient.get('/category'),
+    getCategoryById: (id) => axiosClient.get(`/category/${id}`),
+    createCategory: (data) => axiosClient.post('/category', data),
+    updateCategory: (id, data) => axiosClient.put(`/category/${id}`, data),
+    deleteCategory: (id) => axiosClient.delete(`/category/${id}`),
 
     // --- Equipment API ---
     getAllEquipments: () => axiosClient.get('/equipment'),

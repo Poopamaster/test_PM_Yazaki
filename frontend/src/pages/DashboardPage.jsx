@@ -43,7 +43,7 @@ const Dashboard = () => {
       const eqMap = {};
       activeEq.forEach(eq => { eqMap[eq.sn] = eq; });
 
-      // 2. Map Category เพื่อดึงชื่อ
+      // 2. Map Category เพื่อดึงชื่อและสถานะ
       const catMap = {};
       rawCat.forEach(cat => { catMap[cat._id || cat.id] = cat; });
 
@@ -89,7 +89,11 @@ const Dashboard = () => {
         // เก็บข้อมูลสำหรับตารางและแจ้งเตือน (เอาเฉพาะที่ยังไม่เสร็จ)
         if (status === 'Pending' || status === 'Overdue') {
           const catId = typeof eq.category === 'object' ? eq.category._id : eq.category;
-          const catName = catMap[catId]?.name || eq.category?.name || 'N/A';
+          
+          // --- แก้ไขจุดที่ 1: ดึงชื่อหมวดหมู่และต่อท้ายด้วย (ปิดใช้งาน) ถ้า isActive เป็น false ---
+          const catObj = catMap[catId] || (typeof eq.category === 'object' ? eq.category : {});
+          const catName = catObj.name ? (catObj.isActive === false ? `${catObj.name} (ปิดใช้งาน)` : catObj.name) : 'N/A';
+
           upcomingSchedules.push({
             ...sch,
             status,
@@ -109,7 +113,11 @@ const Dashboard = () => {
       const catCounts = {};
       activeEq.forEach(eq => {
         const catId = typeof eq.category === 'object' ? eq.category._id : eq.category;
-        const catName = catMap[catId]?.name || eq.category?.name || 'Other';
+        
+        // --- แก้ไขจุดที่ 2: ดึงชื่อหมวดหมู่สำหรับกราฟโดนัท ---
+        const catObj = catMap[catId] || (typeof eq.category === 'object' ? eq.category : {});
+        const catName = catObj.name ? (catObj.isActive === false ? `${catObj.name} (ปิดใช้งาน)` : catObj.name) : 'Other';
+        
         catCounts[catName] = (catCounts[catName] || 0) + 1;
       });
 

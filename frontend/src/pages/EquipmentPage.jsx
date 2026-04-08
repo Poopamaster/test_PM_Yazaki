@@ -23,7 +23,7 @@ const Equipment = () => {
     // --- States สำหรับ Modal ---
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingData, setEditingData] = useState(null);
-    
+
     // --- Ref สำหรับปุ่ม Import ---
     const fileInputRef = useRef(null);
 
@@ -84,8 +84,8 @@ const Equipment = () => {
     // ==========================================
     const handleExportCSV = () => {
         let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-        csvContent += "ลำดับ,SN,ชื่ออุปกรณ์,หมวดหมู่,ชนิด,ยี่ห้อ,รุ่น,Zone,สถานะ\n"; 
-        
+        csvContent += "ลำดับ,SN,ชื่ออุปกรณ์,หมวดหมู่,ชนิด,ยี่ห้อ,รุ่น,Zone,สถานะ\n";
+
         filteredEquipments.forEach((eq, index) => {
             const row = [
                 index + 1, eq.sn, eq.name, eq.category?.name || '', eq.type, eq.brand, eq.model, eq.zone, eq.status
@@ -167,17 +167,19 @@ const Equipment = () => {
         }
     };
 
-    if (loading) return <div className="page active"><p style={{padding:'24px'}}>กำลังโหลดข้อมูล...</p></div>;
+    if (loading) return <div className="page active"><p style={{ padding: '24px' }}>กำลังโหลดข้อมูล...</p></div>;
 
     return (
         <div className="page active animate-in fade-in">
-            
+
             {/* --- Filter Bar --- */}
             <div className="filter-bar">
                 <select className="form-control" style={{ width: 'auto' }} value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
                     <option value="">ทุกหมวดหมู่</option>
                     {categories.map(cat => (
-                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        <option key={cat._id} value={cat._id}>
+                            {cat.name} {cat.isActive === false ? '(ปิดใช้งาน)' : ''}
+                        </option>
                     ))}
                 </select>
 
@@ -188,10 +190,10 @@ const Equipment = () => {
                     ))}
                 </select>
 
-                <input 
-                    type="text" 
-                    placeholder="ค้นหา SN หรือ ชื่ออุปกรณ์..." 
-                    className="form-control search-input" 
+                <input
+                    type="text"
+                    placeholder="ค้นหา SN หรือ ชื่ออุปกรณ์..."
+                    className="form-control search-input"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -243,7 +245,10 @@ const Equipment = () => {
                                         </td>
                                         <td className="mono">{eq.sn}</td>
                                         <td style={{ fontWeight: 500 }}>{eq.name}</td>
-                                        <td>{eq.category?.name || 'N/A'}</td>
+                                        <td>
+                                            {eq.category?.name || 'N/A'}
+                                            {eq.category?.isActive === false ? ' (ปิดใช้งาน)' : ''}
+                                        </td>
                                         <td>{eq.type || '-'}</td>
                                         <td>{eq.brand || '-'}</td>
                                         <td>{eq.model || '-'}</td>
@@ -275,7 +280,7 @@ const Equipment = () => {
                         </tbody>
                     </table>
                 </div>
-                
+
                 {/* --- Pagination UI --- */}
                 {totalPages > 0 && (
                     <div className="pagination-container">

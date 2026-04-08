@@ -25,7 +25,7 @@ exports.createSchedule = async (data) => {
 // อัปเดตข้อมูลแผน PM (เช่น อัปเดตสถานะเป็น Completed, ใส่ค่าใช้จ่ายจริง)
 exports.updateSchedule = async (id, data) => {
     const schedule = await PmSchedule.findByIdAndUpdate(id, data, {
-        new: true,
+        returnDocument: 'after',
         runValidators: true
     });
     if (!schedule) throw new Error('ไม่พบข้อมูลที่ต้องการอัปเดต');
@@ -44,7 +44,7 @@ exports.deleteSchedule = async (id) => {
 exports.bulkUpdateSchedules = async (ids, data) => {
     // ใช้ updateMany เพื่อหา _id ที่อยู่ใน array ids แล้วทำการ set ค่าใหม่
     const result = await PmSchedule.updateMany(
-        { _id: { $in: ids } }, 
+        { _id: { $in: ids } },
         { $set: data }
     );
     return result;

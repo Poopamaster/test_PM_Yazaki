@@ -56,6 +56,14 @@ const Sidebar = () => {
           Dashboard
         </NavLink>
 
+        <NavLink to="/category" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <svg className="ni" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="8 2 2 5.5 8 9 14 5.5 8 2" />
+            <polyline points="2 9.5 8 13 14 9.5" />
+          </svg>
+          จัดการหมวดหมู่
+        </NavLink>
+
         <NavLink to="/master" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <svg className="ni" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="12" height="12" rx="2" /><path d="M5 8h6M5 11h4" /><path d="M5 5h6" strokeWidth="1.5" /></svg>
           Master อุปกรณ์

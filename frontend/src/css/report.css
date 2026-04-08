@@ -12,7 +12,10 @@
 .cost-card {
     padding: 20px;
     background: linear-gradient(135deg, #F9FAFB, #FFFFFF);
+    position: fixed;
     top: 10px;
+    right: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .cost-amount {
