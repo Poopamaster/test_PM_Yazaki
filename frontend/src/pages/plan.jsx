@@ -94,7 +94,11 @@ const Plan = () => {
       const equipmentsData = equipmentRes.data?.data || equipmentRes.data || [];
       const categoriesData = categoryRes.data?.data || categoryRes.data || [];
 
-      setEquipmentList(equipmentsData);
+      // 🛑 1. กรองเอาเฉพาะอุปกรณ์ที่กำลัง "Active" เท่านั้น
+      const activeEquipments = equipmentsData.filter(eq => eq.status !== 'Inactive');
+
+      // เซ็ต List สำหรับตอนกดเพิ่มแผนงาน (จะได้ไม่มีเครื่องที่ยกเลิกโผล่มาให้เลือก)
+      setEquipmentList(activeEquipments);
 
       const catMap = {};
       categoriesData.forEach(cat => { catMap[cat._id] = cat; });
@@ -103,7 +107,8 @@ const Plan = () => {
       const zones = new Set();
       const categoryNames = new Set();
 
-      equipmentsData.forEach(eq => {
+      // 🛑 2. ลูปเก็บค่าเฉพาะเครื่องที่ Active
+      activeEquipments.forEach(eq => {
         eqMap[eq.sn] = eq;
         if (eq.zone) zones.add(eq.zone);
 
@@ -117,28 +122,31 @@ const Plan = () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const mergedSchedules = schedulesData.map(sch => {
-        const eqInfo = eqMap[sch.equipmentSN] || {};
-        const catInfo = eqInfo.category?.name ? eqInfo.category : (catMap[eqInfo.category] || {});
+      // 🛑 3. กรองแผนงาน เอาเฉพาะแผนที่มีอุปกรณ์อยู่ใน eqMap (เครื่องยัง Active)
+      const mergedSchedules = schedulesData
+        .filter(sch => eqMap[sch.equipmentSN]) // บรรทัดนี้จะตัดแผนของเครื่องที่ Inactive ทิ้งไป
+        .map(sch => {
+          const eqInfo = eqMap[sch.equipmentSN] || {};
+          const catInfo = eqInfo.category?.name ? eqInfo.category : (catMap[eqInfo.category] || {});
 
-        // AUTO-OVERDUE LOGIC
-        let currentStatus = sch.status || 'Pending';
-        const planDate = new Date(sch.planedDate);
-        if (currentStatus === 'Pending' && planDate < today) {
-          currentStatus = 'Overdue';
-        }
+          // AUTO-OVERDUE LOGIC
+          let currentStatus = sch.status || 'Pending';
+          const planDate = new Date(sch.planedDate);
+          if (currentStatus === 'Pending' && planDate < today) {
+            currentStatus = 'Overdue';
+          }
 
-        return {
-          ...sch,
-          status: currentStatus,
-          equipmentName: eqInfo.name || 'ไม่พบชื่ออุปกรณ์',
-          zone: eqInfo.zone || '-',
-          type: eqInfo.type || '-',
-          categoryName: catInfo.name || '-',
-          intervalMonths: catInfo.interval_months || 0,
-          default_price: catInfo.default_price || 0 // ดึงค่าใช้จ่ายขั้นต่ำมาจาก Category
-        };
-      });
+          return {
+            ...sch,
+            status: currentStatus,
+            equipmentName: eqInfo.name || 'ไม่พบชื่ออุปกรณ์',
+            zone: eqInfo.zone || '-',
+            type: eqInfo.type || '-',
+            categoryName: catInfo.name || '-',
+            intervalMonths: catInfo.interval_months || 0,
+            default_price: catInfo.default_price || 0 // ดึงค่าใช้จ่ายขั้นต่ำมาจาก Category
+          };
+        });
 
       setSchedules(mergedSchedules);
     } catch (error) {

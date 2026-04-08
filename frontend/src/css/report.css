@@ -1,0 +1,172 @@
+/* Report.css */
+
+/* --- Layouts & Grid --- */
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+/* --- Cost Cards --- */
+.cost-card {
+    padding: 20px;
+    background: linear-gradient(135deg, #F9FAFB, #FFFFFF);
+    top: 10px;
+}
+
+.cost-amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.cost-label {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-top: 4px;
+}
+
+.cost-detail {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-100);
+    font-size: 14px;
+}
+
+.cost-detail-info {
+    color: var(--gray-600);
+    margin-bottom: 4px;
+}
+
+.cost-monthly-amount {
+    color: var(--primary);
+}
+
+.cost-yearly-amount {
+    color: var(--gray-500);
+    font-size: 12px;
+    margin-left: 6px;
+}
+
+/* --- Yearly Summary Card --- */
+.yearly-summary-card {
+    background: linear-gradient(135deg, #EBF8FF, #F0FFF4);
+    border-color: #BEE3F8;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+}
+
+.yearly-summary-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.yearly-summary-title {
+    font-size: 13px;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.yearly-summary-amount {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--navy);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-top: 4px;
+}
+
+/* --- Chart Section --- */
+.report-chart-card {
+    padding: 20px;
+}
+
+.report-chart-header {
+    margin-bottom: 16px;
+}
+
+.report-chart-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+
+/* --- Summary Tab Section --- */
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.summary-title {
+    margin: 0;
+    font-size: 18px;
+    color: var(--navy);
+}
+
+/* --- Report Table --- */
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table thead tr {
+    border-bottom: 2px solid var(--gray-200);
+}
+
+.report-table th {
+    padding: 12px 16px;
+}
+
+.report-table tbody tr {
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.report-table td {
+    padding: 12px 16px;
+}
+
+.report-table th.text-left, 
+.report-table td.text-left { text-align: left; }
+
+.report-table th.text-center, 
+.report-table td.text-center { text-align: center; }
+
+.report-table th.text-right, 
+.report-table td.text-right { text-align: right; }
+
+.report-table td.cost-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+}
+
+.marker-box {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 8px;
+    border-radius: 2px;
+}
+
+.report-table-footer {
+    background: var(--gray-50);
+    font-weight: 600;
+    border-top: 2px solid var(--gray-300);
+}
+
+.report-table-footer td {
+    padding: 16px;
+}
+
+.report-table-footer td.total-cost {
+    color: var(--navy);
+    font-size: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+}

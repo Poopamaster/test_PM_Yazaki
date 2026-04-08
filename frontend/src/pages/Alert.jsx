@@ -29,15 +29,18 @@ const AlertPage = () => {
         const masterInfo = rawEquipments.find(eq => eq.sn === schedule.equipmentSN);
 
         return {
-          ...schedule,
-          // ดึงชื่อจาก Database (อ้างอิงตาม EquipmentModel.js)
-          category: masterInfo?.category?.name || masterInfo?.category || "Device",
-          model: masterInfo?.model || "-",
-          zone: masterInfo?.zone || "N/A",
-          equipmentName: masterInfo?.name || "",
-          sn: schedule.equipmentSN
-        };
-      });
+            ...schedule,
+            // ดึงชื่อจาก Database (อ้างอิงตาม EquipmentModel.js)
+            category: masterInfo?.category?.name || masterInfo?.category || "Device",
+            model: masterInfo?.model || "-",
+            zone: masterInfo?.zone || "N/A",
+            equipmentName: masterInfo?.name || "",
+            equipmentStatus: masterInfo?.status || "Active", // เพิ่มการเก็บค่า status
+            sn: schedule.equipmentSN
+          };
+        })
+        // 🛑 เพิ่ม .filter() ตรงนี้ เพื่อเอาเฉพาะอุปกรณ์ที่ status ไม่ใช่ Inactive
+        .filter(item => item.equipmentStatus !== "Inactive");
 
       setSchedules(combinedData);
     } catch (error) {
